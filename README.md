@@ -1,5 +1,5 @@
 # cOS (something OS)
-based on a skeleton made by Philpp Oppermann (blog\_os)
+A simple OS written in Rust. Doesn't solve anything, but is a good educational tools (for me ;) )
 
 # Building
 
@@ -16,3 +16,5 @@ cargo run
 # Credits
 - [Philipp's github page](https://github.com/phil-opp)
 - [Blog OS](https://github.com/phil-opp/blog_os)
+- [Moros (a huge inspiration)](https://github.com/vinc/moros)
+- [Thesus OS](https://github.com/theseus-os/Theseus)
