@@ -1,5 +1,5 @@
 # cOS (something OS)
-A simple OS written in Rust. Doesn't solve anything, but is a good educational tools (for me ;) )
+A simple OS written in Rust. Doesn't solve anything, but is a good educational tool (for me ;) )
 
 # Building
 
