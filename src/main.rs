@@ -8,6 +8,7 @@ extern crate alloc;
 
 use cos::println;
 use cos::task::{executor::Executor, keyboard, Task};
+use cos::ata;
 use bootloader::{entry_point, BootInfo};
 use core::panic::PanicInfo;
 
@@ -15,24 +16,16 @@ entry_point!(kernel_main);
 
 fn kernel_main(boot_info: &'static BootInfo) -> ! {
     use cos::allocator;
-    use cos::memory::{self, BootInfoFrameAllocator};
-    use x86_64::VirtAddr;
 
     println!("Hello World{}", "!");
-    cos::init();
 
-    let phys_mem_offset = VirtAddr::new(boot_info.physical_memory_offset);
-    let mut mapper = unsafe { memory::init(phys_mem_offset) };
-    let mut frame_allocator = unsafe { BootInfoFrameAllocator::init(&boot_info.memory_map) };
-
-    allocator::init_heap(&mut mapper, &mut frame_allocator).expect("heap initialization failed");
+    cos::init(boot_info);
 
     #[cfg(test)]
     test_main();
 
     let mut executor = Executor::new();
     executor.spawn(Task::new(keyboard::print_keypresses()));
-    //executor.spawn(Task::new(shell::start_shell()));
     executor.run();
 }
 

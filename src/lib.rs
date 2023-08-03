@@ -7,7 +7,9 @@
 #![reexport_test_harness_main = "test_main"]
 
 extern crate alloc;
+
 use core::panic::PanicInfo;
+use bootloader::BootInfo;
 
 pub mod allocator;
 pub mod gdt;
@@ -16,13 +18,26 @@ pub mod memory;
 pub mod serial;
 pub mod task;
 pub mod vga_buffer;
+pub mod ata;
 
-pub fn init() {
+pub fn init(boot_info: &'static BootInfo) {
+    use memory::{self, BootInfoFrameAllocator};
+    use x86_64::VirtAddr;
+
     gdt::init();
     interrupts::init_idt();
     unsafe { interrupts::PICS.lock().initialize() };
     x86_64::instructions::interrupts::enable();
+
+    let phys_mem_offset = VirtAddr::new(boot_info.physical_memory_offset);
+    let mut mapper = unsafe { memory::init(phys_mem_offset) };
+    let mut frame_allocator = unsafe { BootInfoFrameAllocator::init(&boot_info.memory_map) };
+    allocator::init_heap(&mut mapper, &mut frame_allocator)
+        .expect("heap initialization failed");
+
+    ata::init();
 }
+
 pub trait Testable {
     fn run(&self) -> ();
 }
