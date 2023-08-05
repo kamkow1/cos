@@ -3,14 +3,16 @@ A simple OS written in Rust. Doesn't solve anything, but is a good educational t
 
 # Building
 
+requirements: cargo, qemu-system-x86_64, qemu-img
+
 ```console
-cargo build
+make build
 ```
 
 # Running
 
 ```console
-cargo run
+make run
 ```
 
 # Credits
