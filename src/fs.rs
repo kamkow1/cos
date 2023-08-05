@@ -17,6 +17,7 @@ impl SuperBlock<'_> {
         }
     }
 
+    /// Checks if the drive is already formatted and contains the signature
     fn check_ata(bus: u8, dsk: u8) -> bool {
         let mut buf = [0u8; ata::BLOCK_SIZE];
         if ata::read_ata(bus, dsk, SUPERBLOCK_ADDR, &mut buf).is_err() {
@@ -29,6 +30,7 @@ impl SuperBlock<'_> {
         &buf[0..8] == SIGNATURE
     }
 
+    /// Writes superblock data to the drive
     fn write(&self, bus: u8, dsk: u8) -> Result<(), ()> {
         let mut buf = [0u8; ata::BLOCK_SIZE];
 
@@ -39,12 +41,15 @@ impl SuperBlock<'_> {
     }
 }
 
+/// Sets up the COS Filesystem on a drive
+/// Call if a drive is unformatted
 fn format_ata(drive: &ata::Drive) {
     let sb = SuperBlock::new();
     sb.write(drive.bus, drive.dsk).expect("FS: Failed to write super block");
     println!("FS: Wrote super block");
 }
 
+/// Initializes the COS Filesystem for a mounted drive
 pub fn init(drive: &ata::Drive) {
     println!("FS: Initializing the filesystem");
 
