@@ -13,3 +13,8 @@ build:
 .PHONY: run
 run:
 	qemu-system-x86_64 $(QEMUFLAGS)
+
+.PHONY: clean
+clean:
+	cargo clean
+	rm disk.img

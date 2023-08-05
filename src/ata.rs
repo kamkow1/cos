@@ -148,9 +148,7 @@ impl Bus {
     }
 
     fn write_command(&mut self, cmd: Command) -> Result<(), ()> {
-        println!("przed wykonaniem self.command.write()");
         unsafe { self.command.write(cmd as u8) }
-        println!("wykonanno self.command.write()");
         self.status();
         self.clear_interrupt();
         if self.status() == 0 {
@@ -231,18 +229,6 @@ lazy_static! {
     pub static ref BUSES: Mutex<Vec<Bus>> = Mutex::new(Vec::new());
 }
 
-pub fn init() {
-    {
-        let mut buses = BUSES.lock();
-        buses.push(Bus::new(0, 0x1F0, 0x3F6, 14));
-        buses.push(Bus::new(1, 0x170, 0x376, 15));
-    }
-
-    for drive in list_drives() {
-        println!("ATA {}: {:#?}", drive.bus, drive); 
-    }
-}
-
 #[derive(Clone, Debug)]
 pub struct Drive {
     pub bus: u8,
@@ -298,13 +284,34 @@ pub fn list_drives() -> Vec<Drive> {
     res
 }
 
-pub fn read(bus: u8, drive: u8, block: u32, buf: &mut [u8]) -> Result<(), ()> {
+pub fn read_ata(bus: u8, drive: u8, block: u32, buf: &mut [u8]) -> Result<(), ()> {
     let mut buses = BUSES.lock();
     buses[bus as usize].read(drive, block, buf)
 }
 
-pub fn write(bus: u8, drive: u8, block: u32, buf: &[u8]) -> Result<(), ()> {
+pub fn write_ata(bus: u8, drive: u8, block: u32, buf: &[u8]) -> Result<(), ()> {
     let mut buses = BUSES.lock();
     buses[bus as usize].write(drive, block, buf)
 }
 
+lazy_static! {
+    pub static ref DRIVES: Mutex<Vec<Drive>> = Mutex::new(Vec::new());
+}
+
+pub fn init() {
+    {
+        let mut buses = BUSES.lock();
+        buses.push(Bus::new(0, 0x1F0, 0x3F6, 14));
+        buses.push(Bus::new(1, 0x170, 0x376, 15));
+    }
+
+    *DRIVES.lock() = list_drives();
+
+    for drive in DRIVES.lock().iter() {
+        if drive.dsk == 0 {
+            println!("ATA: Bootable drive: {:#?}", drive);
+        } else {
+            println!("ATA: found drive: {:#?}", drive);
+        }
+    }
+}

@@ -19,9 +19,11 @@ pub mod serial;
 pub mod task;
 pub mod vga_buffer;
 pub mod ata;
+pub mod fs; 
+
+pub const KERNEL_SIZE: usize = 2 << 20; // 2mb
 
 pub fn init(boot_info: &'static BootInfo) {
-    use memory::{self, BootInfoFrameAllocator};
     use x86_64::VirtAddr;
 
     gdt::init();
@@ -31,11 +33,16 @@ pub fn init(boot_info: &'static BootInfo) {
 
     let phys_mem_offset = VirtAddr::new(boot_info.physical_memory_offset);
     let mut mapper = unsafe { memory::init(phys_mem_offset) };
-    let mut frame_allocator = unsafe { BootInfoFrameAllocator::init(&boot_info.memory_map) };
+    let mut frame_allocator = unsafe {
+        memory::BootInfoFrameAllocator::init(&boot_info.memory_map) 
+    };
     allocator::init_heap(&mut mapper, &mut frame_allocator)
         .expect("heap initialization failed");
 
     ata::init();
+    for drive in ata::DRIVES.lock().iter() {
+        fs::init(&drive);
+    }
 }
 
 pub trait Testable {
